@@ -1,11 +1,15 @@
 import sys
-sys.path.insert(1, "../../../")
-import h2o, tests
+sys.path.insert(1,"../../../")
+import h2o
+from tests import pyunit_utils
+
+
+
 import numpy as np
 
 def glrm_set_loss_by_col():
     print "Importing USArrests.csv data..."
-    arrestsH2O = h2o.upload_file(tests.locate("smalldata/pca_test/USArrests.csv"))
+    arrestsH2O = h2o.upload_file(pyunit_utils.locate("smalldata/pca_test/USArrests.csv"))
     arrestsPy = np.array(h2o.as_list(arrestsH2O))
     arrestsH2O.describe()
     
@@ -31,5 +35,9 @@ def glrm_set_loss_by_col():
     glrm_obj = glrm_h2o._model_json['output']['objective']
     assert abs(glrm_obj - obj_val) < 1e-6, "Final objective was " + str(glrm_obj) + " but should equal " + str(obj_val)
 
+
+
 if __name__ == "__main__":
-    tests.run_test(sys.argv, glrm_set_loss_by_col)
+    pyunit_utils.standalone_test(glrm_set_loss_by_col)
+else:
+    glrm_set_loss_by_col()
