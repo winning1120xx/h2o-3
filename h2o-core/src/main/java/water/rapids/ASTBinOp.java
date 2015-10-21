@@ -9,6 +9,7 @@ import water.fvec.Vec;
 import water.parser.BufferedString;
 import water.util.ArrayUtils;
 import water.util.MathUtils;
+import water.util.VecUtils;
 import java.util.Arrays;
 
 /**
@@ -83,7 +84,7 @@ abstract class ASTBinOp extends ASTPrim {
               cres.addNum(op(d,chk.atd(i)));
           }
         }
-      }.doAll(fr.numCols(),fr).outputFrame(fr._names,null);
+      }.doAll(fr.numCols(), Vec.T_NUM, fr).outputFrame(fr._names,null);
     return cleanCategorical(fr, res); // Cleanup categorical misuse
   }
 
@@ -98,7 +99,7 @@ abstract class ASTBinOp extends ASTPrim {
               cres.addNum(op(chk.atd(i),d));
           }
         }
-      }.doAll(fr.numCols(),fr).outputFrame(fr._names,null);
+      }.doAll(fr.numCols(), Vec.T_NUM, fr).outputFrame(fr._names,null);
     return cleanCategorical(fr, res); // Cleanup categorical misuse
   }
 
@@ -148,7 +149,7 @@ abstract class ASTBinOp extends ASTPrim {
             }
           }
         }
-      }.doAll(fr.numCols(),fr).outputFrame(fr._names,null);
+      }.doAll(fr.numCols(), Vec.T_NUM, fr).outputFrame(fr._names,null);
     return new ValFrame(res);
   }
 
@@ -183,7 +184,7 @@ abstract class ASTBinOp extends ASTPrim {
             }
           }
         }
-      }.doAll(fr.numCols(),fr).outputFrame(fr._names,null);
+      }.doAll(fr.numCols(), Vec.T_NUM, fr).outputFrame(fr._names,null);
     return new ValFrame(res);
   }
 
@@ -201,7 +202,7 @@ abstract class ASTBinOp extends ASTPrim {
     if( lf.numCols() != rt.numCols() )
       throw new IllegalArgumentException("Frames must have same columns, found "+lf.numCols()+" columns and "+rt.numCols()+" columns.");
 
-    return new ValFrame(new MRTask() {
+    Frame res = new MRTask() {
         @Override public void map( Chunk[] chks, NewChunk[] cress ) {
           assert (cress.length<<1) == chks.length;
           for( int c=0; c<cress.length; c++ ) {
@@ -212,7 +213,8 @@ abstract class ASTBinOp extends ASTPrim {
               cres.addNum(op(clf.atd(i),crt.atd(i)));
           }
         }
-      }.doAll(lf.numCols(),new Frame(lf).add(rt)).outputFrame(lf._names,null));
+      }.doAll(lf.numCols(), Vec.T_NUM, new Frame(lf).add(rt)).outputFrame(lf._names,null);
+    return cleanCategorical(lf, res); // Cleanup categorical misuse
   }
 
   private ValRow row_op_row( double[] lf, double[] rt, String[] names ) {
@@ -294,7 +296,7 @@ class ASTEQ   extends ASTBinOp { public String str() { return "=="; } double op(
                 cres.addNum(op(chk.atd(i),d));
           }
         }
-      }.doAll(fr.numCols(),fr).outputFrame());
+      }.doAll(fr.numCols(), Vec.T_NUM, fr).outputFrame());
   }
   @Override boolean categoricalOK() { return true; }  // Make sense to run this OP on an enm?
 }
@@ -465,13 +467,13 @@ class ASTIfElse extends ASTPrim {
             }
           }
         }
-      }.doAll(tst.numCols(),fr).outputFrame(null,domains);
+      }.doAll(tst.numCols(), Vec.T_NUM, fr).outputFrame(null,domains);
 
     // flatten domains since they may be larger than needed
     if( domains!=null ) {
       for (int i = 0; i < res.numCols(); ++i) {
         if (res.vec(i).domain() != null) {
-          final long[] dom = new Vec.CollectDomainFast((int) res.vec(i).max()).doAll(res.vec(i)).domain();
+          final long[] dom = new VecUtils.CollectDomainFast((int) res.vec(i).max()).doAll(res.vec(i)).domain();
           String[] newDomain = new String[dom.length];
           for (int l = 0; l < dom.length; ++l)
             newDomain[l] = res.vec(i).domain()[(int) dom[l]];
