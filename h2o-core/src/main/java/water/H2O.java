@@ -119,6 +119,10 @@ final public class H2O {
             "          The directory where H2O writes logs to disk.\n" +
             "          (This usually has a good default that you need not change.)\n" +
             "\n" +
+            "    -log_level <TRACE,DEBUG,INFO,WARN,ERRR,FATAL>\n" +
+            "          Write messages at this logging level, or above.  Default is INFO." +
+            "\n" +
+            "\n" +
             "    -flow_dir <server side directory or HDFS directory>\n" +
             "          The directory where H2O stores saved flows.\n" +
             defaultFlowDirMessage +
@@ -524,10 +528,14 @@ final public class H2O {
     H2O.exit(status);
   }
 
-  public static int orderlyShutdown(){return orderlyShutdown(-1);}
-  public static int orderlyShutdown(int timeout){
+  public static int orderlyShutdown() {
+    return orderlyShutdown(-1);
+  }
+  public static int orderlyShutdown(int timeout) {
     boolean [] confirmations = new boolean[H2O.CLOUD.size()];
-    confirmations[H2O.SELF.index()] = true;
+    if (H2O.SELF.index() >= 0) { // Do not wait for clients to shutdown
+      confirmations[H2O.SELF.index()] = true;
+    }
     Futures fs = new Futures();
     for(H2ONode n:H2O.CLOUD._memary) {
       if(n != H2O.SELF)

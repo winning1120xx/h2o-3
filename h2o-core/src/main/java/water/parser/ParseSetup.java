@@ -26,6 +26,7 @@ public final class ParseSetup extends Iced {
   public static final int GUESS_HEADER = 0;
   public static final int HAS_HEADER = 1;
   public static final int GUESS_COL_CNT = -1;
+
   ParserType _parse_type;     // CSV, XLS, XSLX, SVMLight, Auto, ARFF
   byte _separator;            // Field separator, usually comma ',' or TAB or space ' '
   // Whether or not single-quotes quote a field.  E.g. how do we parse:
@@ -476,17 +477,16 @@ public final class ParseSetup extends Iced {
     int sep = n.lastIndexOf(java.io.File.separatorChar);
     if( sep > 0 ) n = n.substring(sep+1);
     int dot = n.lastIndexOf('.');
-    if( dot > 0) {
-      while (n.endsWith("zip")
-              || n.endsWith("gz")
-              || n.endsWith("csv")
-              || n.endsWith("xls")
-              || n.endsWith("txt")
-              || n.endsWith("svm")
-              || n.endsWith("arff")) {
-        n = n.substring(0, dot);
-        dot = n.lastIndexOf('.');
-      }
+    while ( dot > 0 &&
+            (n.endsWith("zip")
+            || n.endsWith("gz")
+            || n.endsWith("csv")
+            || n.endsWith("xls")
+            || n.endsWith("txt")
+            || n.endsWith("svm")
+            || n.endsWith("arff"))) {
+      n = n.substring(0, dot);
+      dot = n.lastIndexOf('.');
     }
     // "2012_somedata" ==> "X2012_somedata"
     if( !Character.isJavaIdentifierStart(n.charAt(0)) ) n = "X"+n;
@@ -526,4 +526,55 @@ public final class ParseSetup extends Iced {
       }
     }
   }
+
+  public ParseSetup setParseType(ParserType parse_type) {
+    this._parse_type = parse_type;
+    return this;
+  }
+
+  public ParseSetup setSeparator(byte separator) {
+    this._separator = separator;
+    return this;
+  }
+
+  public ParseSetup setSingleQuotes(boolean single_quotes) {
+    this._single_quotes = single_quotes;
+    return this;
+  }
+
+  public ParseSetup setCheckHeader(int check_header) {
+    this._check_header = check_header;
+    return this;
+  }
+
+  public ParseSetup setNumberColumns(int number_columns) {
+    this._number_columns = number_columns;
+    return this;
+  }
+
+  public ParseSetup setColumnNames(String[] column_names) {
+    this._column_names = column_names;
+    return this;
+  }
+
+  public ParseSetup setColumnTypes(byte[] column_types) {
+    this._column_types = column_types;
+    return this;
+  }
+
+  public ParseSetup setDomains(String[][] domains) {
+    this._domains = domains;
+    return this;
+  }
+
+  public ParseSetup setNAStrings(String[][] na_strings) {
+    this._na_strings = na_strings;
+    return this;
+  }
+
+  public ParseSetup setChunkSize(int chunk_size) {
+    this._chunk_size = chunk_size;
+    return this;
+  }
+
 } // ParseSetup state class
