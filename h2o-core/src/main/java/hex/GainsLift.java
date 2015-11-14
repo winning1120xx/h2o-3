@@ -46,7 +46,6 @@ public class GainsLift extends Iced {
 
   protected void exec() {
     init();
-    QuantileModel qm = null;
     Scope.enter();
     Frame frame = null;
     try {
@@ -82,7 +81,6 @@ public class GainsLift extends Iced {
       avg_response_rate = gt.avg_response_rate();
       positive_responses = gt.responses();
     } finally {       // Delete adaptation vectors
-      if (qm!=null) qm.remove();
       if (frame != null) DKV.remove(frame._key); //just remove the header
       Scope.exit();
     }
